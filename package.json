@@ -1,0 +1,60 @@
+{
+  "name": "sigma-scrollkit",
+  "version": "1.0.0",
+  "private": false,
+  "author": {
+    "name": "Aleksey Hoffman",
+    "email": "aleksey.hoffman.public@gmail.com"
+  },
+  "keywords": [
+    "vue",
+    "vue component",
+    "vue infinite scroll",
+    "vue virtual scroll",
+    "vue virtual list",
+    "vue virtual grid",
+    "virtual scroller"
+  ],
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "module": "./dist/sigma-scrollkit.js",
+  "main": "./dist/sigma-scrollkit.umd.js",
+  "exports": {
+    ".": {
+      "import": "./dist/sigma-scrollkit.js",
+      "require": "./dist/sigma-scrollkit.umd.cjs"
+    }
+  },
+  "browser": {
+    ".": "./dist/sigma-scrollkit.es.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check build-only",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "vite-plugin-css-injected-by-js": "^3.3.0",
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.22.10",
+    "@rushstack/eslint-patch": "^1.3.3",
+    "@tsconfig/node18": "^18.2.0",
+    "@types/node": "^20.5.0",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "@vue/eslint-config-typescript": "^11.0.3",
+    "@vue/tsconfig": "^0.4.0",
+    "eslint": "^8.47.0",
+    "eslint-plugin-vue": "^9.17.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "~5.1.6",
+    "vite": "^4.4.9",
+    "vue-tsc": "^1.8.8"
+  }
+}
