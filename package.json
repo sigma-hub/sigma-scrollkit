@@ -6,6 +6,10 @@
     "name": "Aleksey Hoffman",
     "email": "aleksey.hoffman.public@gmail.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sigma-hub/sigma-scrollkit"
+  },
   "keywords": [
     "vue",
     "vue component",
