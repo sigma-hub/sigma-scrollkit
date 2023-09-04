@@ -16,7 +16,7 @@ export default defineConfig({
       name: 'sigma-scrollkit',
       fileName: 'sigma-scrollkit'
     },
-    minify: false,
+    minify: true,
     rollupOptions: {
       external: ['vue'],
       output: {
