@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import uniqueId from '@/utils/uniqueId';
+import uniqueId from '../utils/uniqueId';
 import {ref, computed, nextTick, watch, onMounted, onBeforeUnmount} from 'vue';
 import type {Ref} from 'vue';
 
@@ -11,7 +11,6 @@ interface VirtualEntryItem {
 
 export interface VirtualEntry {
   id: number | string;
-  type: string;
   height: number;
   rowGap: number;
   columnGap: number;
@@ -47,7 +46,6 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   virtualEntries: () => ([]),
-  layoutType: 'list',
   bufferItemCount: 2,
   minColumnWidth: 200,
   calcExtraInfo: false
