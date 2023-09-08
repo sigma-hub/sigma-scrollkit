@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import uniqueId from '../utils/uniqueId';
-import {ref, computed, nextTick, watch, onMounted, onBeforeUnmount} from 'vue';
-import type {Ref} from 'vue';
+import uniqueId from "../utils/uniqueId";
+import {
+  ref,
+  computed,
+  nextTick,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
+import type { Ref } from "vue";
 
 type ElementResizeCallback = (entry: ResizeObserverEntry) => void;
 
@@ -22,40 +29,49 @@ interface ScrollEmitValue {
   event: UIEvent;
   scrollOffsetY: number;
   scrollDelta: number;
-  scrollDirection: 'up' | 'down';
+  scrollDirection: "up" | "down";
   scrollSpeed: number;
 }
 
 interface Props {
   virtualEntries: VirtualEntry[];
   scrollerId: string;
-  layoutType: 'list' | 'grid';
+  layoutType: "list" | "grid";
   minColumnWidth?: number;
   bufferItemCount?: number;
   calcExtraInfo?: boolean;
+  topOffsetTrigger?: number;
+  bottomOffsetTrigger?: number;
 }
 
 interface Emits {
-  (event: 'viewport-mounted', value: {viewport: Ref<HTMLElement | null>; selector: string}): void;
-  (event: 'scroll', value: ScrollEmitValue): void;
-  (event: 'scrolling', value: boolean): void;
-  (event: 'is-scrollable', value: boolean): void;
-  (event: 'top-reached', value: boolean): void;
-  (event: 'bottom-reached', value: boolean): void;
+  (
+    event: "viewport-mounted",
+    value: { viewport: Ref<HTMLElement | null>; selector: string }
+  ): void;
+  (event: "scroll", value: ScrollEmitValue): void;
+  (event: "scrolling", value: boolean): void;
+  (event: "is-scrollable", value: boolean): void;
+  (event: "top-reached", value: boolean): void;
+  (event: "bottom-reached", value: boolean): void;
+  (event: "top-offset-trigger", value: boolean): void;
+  (event: "bottom-offset-trigger", value: boolean): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  virtualEntries: () => ([]),
+  virtualEntries: () => [],
   bufferItemCount: 2,
   minColumnWidth: 200,
-  calcExtraInfo: false
+  calcExtraInfo: false,
+  topOffsetTrigger: 0,
+  bottomOffsetTrigger: 0,
 });
 
 const emit = defineEmits<Emits>();
 
-defineExpose({scrollTop, scrollToItem, scrollToIndex});
+defineExpose({ scrollTop, scrollToItem, scrollToIndex });
 
-const virtualScrollerSelector = ref<string>('');
+const virtualScrollerSelector = ref<string>("");
 const transformedVirtualEntries = ref<VirtualEntry[]>(props.virtualEntries);
 const maxColumns = ref<number>(1);
 const rootElementRef = ref<HTMLElement | null>(null);
@@ -69,7 +85,7 @@ const scrolling = ref<boolean>(false);
 const scrollStopTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 const scrollOffsetY = ref<number>(0);
 const scrollPreviousOffsetY = ref<number>(0);
-const scrollDirection = ref<'up' | 'down'>('down');
+const scrollDirection = ref<"up" | "down">("down");
 const scrollDelta = ref<number>(0);
 const scrollSpeed = ref<number>(0);
 const scrollSpeedHistorySize = ref<number>(10);
@@ -77,43 +93,58 @@ const scrollSpeedHistory = ref<number[]>([]);
 
 onMounted(() => {
   init();
-  window.addEventListener('resize', windowResizeHandler);
+  window.addEventListener("resize", windowResizeHandler);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', windowResizeHandler);
+  window.removeEventListener("resize", windowResizeHandler);
 });
 
-const renderedItems = computed(() => (
-  transformedVirtualEntries.value.slice(scrolledItemsCount.value, scrolledItemsCount.value + renderedItemsCount.value)
-));
+const renderedItems = computed(() =>
+  transformedVirtualEntries.value.slice(
+    scrolledItemsCount.value,
+    scrolledItemsCount.value + renderedItemsCount.value
+  )
+);
 
-const isTopReached = computed(() => (
-  scrollOffsetY.value === 0
-));
+const isTopReached = computed(() => scrollOffsetY.value === 0);
 
-const isBottomReached = computed(() => (
-  Math.ceil(scrollOffsetY.value + rootElementHeight.value) >= totalItemHeight.value
-));
+const isBottomReached = computed(
+  () =>
+    Math.ceil(scrollOffsetY.value + rootElementHeight.value) >=
+    totalItemHeight.value
+);
 
-const viewportOffsetY = computed(() => (
+const isTopTriggerReached = computed(
+  () =>
+    Math.ceil(scrollOffsetY.value + rootElementHeight.value) >=
+    props.topOffsetTrigger
+);
+
+const isBottomTriggerReached = computed(
+  () =>
+    Math.ceil(scrollOffsetY.value + rootElementHeight.value) >=
+    totalItemHeight.value - props.bottomOffsetTrigger
+);
+
+const viewportOffsetY = computed(() =>
   itemHeights.value
     .slice(0, scrolledItemsCount.value)
     .reduce((accumulator, current) => accumulator + (current || 0), 0)
-));
+);
 
 const virtualScrollerStyle = computed(() => ({
-  height: `${totalItemHeight.value}px`
+  height: `${totalItemHeight.value}px`,
 }));
 
 const viewportStyle = computed(() => ({
-  transform: `translateY(${viewportOffsetY.value}px)`
+  transform: `translateY(${viewportOffsetY.value}px)`,
 }));
 
 const scrolledItemsCount = computed(() => {
   let itemHeightSum = 0;
   let counter = 0;
-  itemHeights.value.forEach(height => {
+  itemHeights.value.forEach((height) => {
     if (itemHeightSum <= scrollOffsetY.value) {
       itemHeightSum += height;
       counter += 1;
@@ -125,7 +156,7 @@ const scrolledItemsCount = computed(() => {
 const renderedItemsCount = computed(() => {
   let itemHeightSum = 0;
   let itemsNeededToFitRootContainer = 0;
-  itemHeights.value.forEach(height => {
+  itemHeights.value.forEach((height) => {
     if (itemHeightSum < rootElementHeight.value) {
       itemHeightSum += height;
       itemsNeededToFitRootContainer += 1;
@@ -145,16 +176,24 @@ watch(
   },
   {
     deep: true,
-    immediate: true
+    immediate: true,
   }
 );
 
-watch(isTopReached, newValue => {
-  emit('top-reached', newValue);
+watch(isTopReached, (newValue) => {
+  emit("top-reached", newValue);
 });
 
-watch(isBottomReached, newValue => {
-  emit('bottom-reached', newValue);
+watch(isBottomReached, (newValue) => {
+  emit("bottom-reached", newValue);
+});
+
+watch(isTopTriggerReached, (newValue) => {
+  emit("top-offset-trigger", newValue);
+});
+
+watch(isBottomTriggerReached, (newValue) => {
+  emit("bottom-offset-trigger", newValue);
 });
 
 function init() {
@@ -163,7 +202,10 @@ function init() {
   update();
   updateLazy();
   nextTick(() => {
-    emit('viewport-mounted', {viewport: rootElementRef, selector: virtualScrollerSelector.value});
+    emit("viewport-mounted", {
+      viewport: rootElementRef,
+      selector: virtualScrollerSelector.value,
+    });
     initRootElementResizeObserver();
   });
 }
@@ -182,18 +224,20 @@ function entriesToRows(): VirtualEntry[] {
   }
 
   let newRows: VirtualEntry[] = [];
-  if (props.layoutType === 'grid') {
-    maxColumns.value = Math.floor(rootElementWidth.value / props.minColumnWidth);
+  if (props.layoutType === "grid") {
+    maxColumns.value = Math.floor(
+      rootElementWidth.value / props.minColumnWidth
+    );
   } else {
     maxColumns.value = 1;
   }
-  props.virtualEntries.forEach(row => {
+  props.virtualEntries.forEach((row) => {
     const newItems = chunkArray(row.items, maxColumns.value);
-    newItems.forEach(chunk => {
+    newItems.forEach((chunk) => {
       row.id = uniqueId();
       newRows.push({
         ...row,
-        items: chunk
+        items: chunk,
       });
     });
   });
@@ -215,7 +259,7 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   return result;
 }
 
-function update () {
+function update() {
   if (!rootElementRef.value || transformedVirtualEntries.value.length === 0) {
     return;
   }
@@ -227,13 +271,13 @@ function update () {
   });
 }
 
-function updateLazy () {
+function updateLazy() {
   setVirtualScrollerSelector();
   setRootElementRenderedHeight();
   setRootElementHeight();
   transformItems();
   setItemHeights();
-  emit('is-scrollable', isScrollable());
+  emit("is-scrollable", isScrollable());
 }
 
 function initRootElementResizeObserver() {
@@ -244,8 +288,11 @@ function initRootElementResizeObserver() {
   observeRootElementResize(element, rootElementResizeHandler);
 }
 
-function observeRootElementResize(element: HTMLElement, callback: ElementResizeCallback) {
-  const observer = new ResizeObserver(entries => {
+function observeRootElementResize(
+  element: HTMLElement,
+  callback: ElementResizeCallback
+) {
+  const observer = new ResizeObserver((entries) => {
     for (const entry of entries) {
       if (entry.target === element) {
         callback(entry);
@@ -273,49 +320,54 @@ function isScrollable() {
   return rootElementRef.value.scrollHeight > rootElementRef.value.clientHeight;
 }
 
-function scrollHandler (event: UIEvent) {
+function scrollHandler(event: UIEvent) {
   handleScrollStart();
   handleScrollStop();
   setScrollStatus(rootElementRef.value);
   update();
-  emit('scroll', {
+  emit("scroll", {
     event: event satisfies UIEvent,
     scrollOffsetY: scrollOffsetY.value,
     scrollDelta: scrollDelta.value,
     scrollDirection: scrollDirection.value,
-    scrollSpeed: scrollSpeed.value
+    scrollSpeed: scrollSpeed.value,
   });
 }
 
-function handleScrollStart () {
+function handleScrollStart() {
   scrolling.value = true;
-  emit('scrolling', true);
+  emit("scrolling", true);
 }
 
-function handleScrollStop () {
+function handleScrollStop() {
   if (scrollStopTimeout.value) {
     clearTimeout(scrollStopTimeout.value);
   }
   scrollStopTimeout.value = setTimeout(() => {
     scrolling.value = false;
-    emit('scrolling', false);
+    emit("scrolling", false);
   }, 100);
 }
 
-function setScrollStatus (element: HTMLElement | null) {
+function setScrollStatus(element: HTMLElement | null) {
   scrollPreviousOffsetY.value = scrollOffsetY.value;
   scrollOffsetY.value = element?.scrollTop || 0;
   scrollDelta.value = scrollOffsetY.value - scrollPreviousOffsetY.value;
-  scrollDirection.value = scrollDelta.value > 0 ? 'down' : 'up';
+  scrollDirection.value = scrollDelta.value > 0 ? "down" : "up";
 
   if (props.calcExtraInfo) {
     recordScrollSpeedHistory(scrollDelta.value);
-    const speedSum = Math.abs((scrollSpeedHistory.value).reduce((accumulator, current) => accumulator + current, 0));
+    const speedSum = Math.abs(
+      scrollSpeedHistory.value.reduce(
+        (accumulator, current) => accumulator + current,
+        0
+      )
+    );
     scrollSpeed.value = speedSum / scrollSpeedHistory.value.length;
   }
 }
 
-function recordScrollSpeedHistory (_scrollSpeed: number) {
+function recordScrollSpeedHistory(_scrollSpeed: number) {
   if (scrollSpeedHistory.value.length > scrollSpeedHistorySize.value) {
     scrollSpeedHistory.value.splice(0, 1);
   }
@@ -323,7 +375,8 @@ function recordScrollSpeedHistory (_scrollSpeed: number) {
 }
 
 function setRootElementHeight() {
-  const virtualScrollerParentElement = getVirtualScrollerElement()?.parentElement satisfies HTMLElement | undefined | null;
+  const virtualScrollerParentElement = getVirtualScrollerElement()
+    ?.parentElement satisfies HTMLElement | undefined | null;
 
   if (virtualScrollerParentElement) {
     rootElementHeight.value = virtualScrollerParentElement.offsetHeight;
@@ -340,20 +393,29 @@ function setRootElementRenderedHeight() {
 }
 
 function getVirtualScrollerElement() {
-  return document.querySelector(virtualScrollerSelector.value) satisfies HTMLElement | null;
+  return document.querySelector(
+    virtualScrollerSelector.value
+  ) satisfies HTMLElement | null;
 }
 
 function setRenderedItemHeights() {
-  renderedItemHeights.value = renderedItems.value.map(item => item.height + item.rowGap);
+  renderedItemHeights.value = renderedItems.value.map(
+    (item) => item.height + item.rowGap
+  );
 }
 
-function setItemHeights () {
-  itemHeights.value = transformedVirtualEntries.value.map(item => item.height + item.rowGap);
-  totalItemHeight.value = itemHeights.value.reduce((accumulator, current) => accumulator + (current || 0), 0);
+function setItemHeights() {
+  itemHeights.value = transformedVirtualEntries.value.map(
+    (item) => item.height + item.rowGap
+  );
+  totalItemHeight.value = itemHeights.value.reduce(
+    (accumulator, current) => accumulator + (current || 0),
+    0
+  );
 }
 
-function scrollTop () {
-  rootElementRef?.value?.scrollTo?.({top: 0, behavior: 'smooth'});
+function scrollTop() {
+  rootElementRef?.value?.scrollTo?.({ top: 0, behavior: "smooth" });
 }
 
 function scrollToItem(params: { key: string; value: unknown }) {
@@ -368,40 +430,30 @@ function scrollToItem(params: { key: string; value: unknown }) {
   }
 }
 
-function scrollToIndex (index: number) {
+function scrollToIndex(index: number) {
   if (rootElementRef.value) {
     rootElementRef.value.scrollTop = getIndexOffsetY(index);
   }
 }
 
-function getIndexOffsetY (index: number) {
-  return transformedVirtualEntries.value.slice(0, index).reduce((accumulator, current) => accumulator + (current.height + current.rowGap || 0), 0);
+function getIndexOffsetY(index: number) {
+  return transformedVirtualEntries.value
+    .slice(0, index)
+    .reduce(
+      (accumulator, current) =>
+        accumulator + (current.height + current.rowGap || 0),
+      0
+    );
 }
 
 setVirtualScrollerSelector();
 </script>
 
 <template>
-  <div
-    ref="rootElementRef"
-    class="sigma-scrollkit"
-    :scroller-index="props.scrollerId"
-    @scroll="scrollHandler"
-  >
-    <div
-      class="sigma-scrollkit__viewport-container"
-      :style="virtualScrollerStyle"
-    >
-      <div
-        class="sigma-scrollkit__viewport"
-        :style="viewportStyle"
-      >
-        <slot
-          name="viewport"
-          :rendered-items="renderedItems"
-          :scrolling="scrolling"
-          :max-columns="maxColumns"
-        />
+  <div ref="rootElementRef" class="sigma-scrollkit" :scroller-index="props.scrollerId" @scroll="scrollHandler">
+    <div class="sigma-scrollkit__viewport-container" :style="virtualScrollerStyle">
+      <div class="sigma-scrollkit__viewport" :style="viewportStyle">
+        <slot name="viewport" :rendered-items="renderedItems" :scrolling="scrolling" :max-columns="maxColumns" />
       </div>
     </div>
   </div>
