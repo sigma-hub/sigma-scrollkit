@@ -450,23 +450,10 @@ setVirtualScrollerSelector();
 </script>
 
 <template>
-  <div
-    ref="rootElementRef"
-    class="sigma-scrollkit"
-    :scroller-index="props.scrollerId"
-    @scroll="scrollHandler"
-  >
-    <div
-      class="sigma-scrollkit__viewport-container"
-      :style="virtualScrollerStyle"
-    >
+  <div ref="rootElementRef" class="sigma-scrollkit" :scroller-index="props.scrollerId" @scroll="scrollHandler">
+    <div class="sigma-scrollkit__viewport-container" :style="virtualScrollerStyle">
       <div class="sigma-scrollkit__viewport" :style="viewportStyle">
-        <slot
-          name="viewport"
-          :rendered-items="renderedItems"
-          :scrolling="scrolling"
-          :max-columns="maxColumns"
-        />
+        <slot name="viewport" :rendered-items="renderedItems" :scrolling="scrolling" :max-columns="maxColumns" />
       </div>
     </div>
   </div>
