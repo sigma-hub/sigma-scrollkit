@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import uniqueId from '../utils/uniqueId';
+import uniqueId from './../../../utils/uniqueId';
 import {ref, computed, nextTick, watch, onMounted, onBeforeUnmount} from 'vue';
 import type {Ref} from 'vue';
 
@@ -33,6 +33,8 @@ interface Props {
   minColumnWidth?: number;
   bufferItemCount?: number;
   calcExtraInfo?: boolean;
+  topOffset?: number;
+  bottomOffset?: number;
 }
 
 interface Emits {
@@ -42,13 +44,17 @@ interface Emits {
   (event: 'is-scrollable', value: boolean): void;
   (event: 'top-reached', value: boolean): void;
   (event: 'bottom-reached', value: boolean): void;
+  (event: 'top-offset-event', value: boolean): void;
+  (event: 'bottom-offset-event', value: boolean): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   virtualEntries: () => ([]),
   bufferItemCount: 2,
   minColumnWidth: 200,
-  calcExtraInfo: false
+  calcExtraInfo: false,
+  topOffset: 0,
+  bottomOffset: 0
 });
 
 const emit = defineEmits<Emits>();
@@ -94,6 +100,14 @@ const isTopReached = computed(() => (
 
 const isBottomReached = computed(() => (
   Math.ceil(scrollOffsetY.value + rootElementHeight.value) >= totalItemHeight.value
+));
+
+const isTopWithOffsetReached = computed(() => (
+  Math.ceil(scrollOffsetY.value + rootElementHeight.value) >= props.topOffset
+));
+
+const isBottomWithOffsetReached = computed(() => (
+  Math.ceil(scrollOffsetY.value + rootElementHeight.value) >= totalItemHeight.value - props.bottomOffset
 ));
 
 const viewportOffsetY = computed(() => (
@@ -155,6 +169,14 @@ watch(isTopReached, newValue => {
 
 watch(isBottomReached, newValue => {
   emit('bottom-reached', newValue);
+});
+
+watch(isTopWithOffsetReached, newValue => {
+  emit('top-offset-event', newValue)
+});
+
+watch(isBottomWithOffsetReached, newValue => {
+  emit('bottom-offset-event', newValue)
 });
 
 function init() {
