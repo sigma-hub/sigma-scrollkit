@@ -4,18 +4,19 @@ Advanced virtual scrolling module for Vue 3.
 
 Originally created for the parent project: Sigma File Manager v2.
 
-<img src="https://github.com/sigma-hub/sigma-scrollkit/blob/main/.github/assets/main.png">
+<img src="https://raw.githubusercontent.com/sigma-hub/sigma-scrollkit/main/.github/assets/main.png">
 
 ## Features
 
-- List view
-- Grid view
-- Arbitrary item height
-- Spacers
-- Dividers
-- Support for custom scrollbars
-- Events
-- Slots
+- Supports complex list view.
+- Supports complex grid view.
+- Programmatic control.
+- Grid view generates automatically based on the specified min column width, and adapts to the viewport / window size.
+- Supports arbitrary dynamic item height, row and column gaps.
+- Allows to build complex virtual scrollers programmatically with spacers, dividers and item groups of different sizes.
+- Supports custom scrollbars.
+- Emits many useful events, including scroll statuses like `is-scrolling`, `bottom-reached`, etc.
+- Scrollbar doesn't jitter when scrolling because the item height is known in advance.
 
 ## Supporters
 
@@ -85,62 +86,152 @@ Originally created for the parent project: Sigma File Manager v2.
 npm install sigma-scrollkit
 ```
 
-## VirtualScroller | Props
+## Usage
 
-### `virtualEntries`
+The module renders a list of virtual rows (virtual entries) in both the `list` and `grid` views. The difference is that in `list` view the column count is always 1.
+
+
+### [Demo playground](https://stackblitz.com/edit/sigma-scrollkit-demo)
+
+
+### Interface
+
+```ts
+interface VirtualEntryItem {
+  [key: string]: unknown;
+}
+
+export interface VirtualEntry {
+  id: number | string;
+  height: number;
+  rowGap: number;
+  columnGap: number;
+  items: VirtualEntryItem[];
+  [key: string]: unknown;
+}
+
+interface Props {
+  virtualEntries: VirtualEntry[];
+  scrollerId: string;
+  layoutType: "list" | "grid";
+  minColumnWidth?: number;
+  bufferItemCount?: number;
+  calcExtraInfo?: boolean;
+  topOffsetTrigger?: number;
+  bottomOffsetTrigger?: number;
+}
+```
+
+### Template structure
+
+```html
+<script setup>
+import {VirtualScroller, VirtualScrollerRow} from 'sigma-scrollkit'
+
+// ...
+</script>
+
+<template>
+  <VirtualScroller
+    ref="virtualGridRef"
+    layout-type="grid"
+    :scroller-id="0"
+    :virtual-entries="formattedDirEntries"
+    :min-column-width="minColumnWidth"
+    @viewport-mounted="onViewportMounted"
+    @top-reached="onTopReached"
+    @bottom-reached="onBottomReached"
+    @is-scrollable="onIsScrollable"
+  >
+    <template #viewport="{ renderedItems, scrolling, maxColumns }">
+      <VirtualScrollerRow
+        v-for="virtualEntry in renderedItems"
+        :key="virtualEntry.id"
+        :virtual-entry="virtualEntry"
+        :max-columns="maxColumns"
+      >
+        <Component
+          :is="componentReference[virtualEntry.component]"
+          v-for="(item, index) in virtualEntry.items"
+          :key="index"
+          :height="virtualEntry.height"
+          :hover-enabled="!scrolling"
+          :dir-entry="item"
+          layout-type="grid"
+          v-bind="'props' in item && item.props"
+          :style="`height: ${virtualEntry.height}px`"
+        />
+      </VirtualScrollerRow>
+    </template>
+  </VirtualScroller>
+</template>
+```
+
+## Components
+
+The module exports 2 components:
+
+- `VirtualScroller` - main container component, calculates all the logic and renders virtual list / grid.
+- `VirtualScrollerRow` - component needed to wrap each row in the virtual container.
+
+## API
+
+### `VirtualScroller` props:
+
+#### `virtualEntries`
 - Required: `true`
 - Type: `VirtualEntry[]`
 
-### `scrollerId`
+#### `scrollerId`
 - Required: `true`
 - Type: `string`
 
-### `layoutType`
+#### `layoutType`
 - Required: `true`
 - Type: `'list' | 'grid'`
 
-### `minColumnWidth`
+#### `minColumnWidth`
 - Required: `false`
 - Type: `number`
 
-### `bufferItemCount`
+#### `bufferItemCount`
 - Required: `false`
 - Type: `number`
 
-### `calcExtraInfo`
+#### `calcExtraInfo`
 - Required: `false`
 - Type: `boolean`
 - Description: if `true`, extra data properties will be calculated and emited in the `scroll` event:
   - `scrollSpeed`: current scroll speed
 
-## VirtualScroller | Events
+### `VirtualScroller` events:
 
-### `viewport-mounted` 
+#### `viewport-mounted` 
 - Type: `{viewport: Ref<HTMLElement | null>; selector: string}`
 
-### `scroll` 
+#### `scroll` 
 - Type: `ScrollEmitValue`
 
-### `scrolling` 
+#### `scrolling` 
 - Type: `boolean`
 
-### `is-scrollable` 
+#### `is-scrollable` 
 - Type: `boolean`
 
-### `top-reached` 
+#### `top-reached` 
 - Type: `boolean`
 
-### `bottom-reached` 
+#### `bottom-reached` 
 - Type: `boolean`
 
-## VirtualScrollerRow | Props
+## `VirtualScrollerRow` props:
 
-### `virtualEntry`
+#### `virtualEntry`
 
 - Required: `true`
 - Type: `VirtualEntry`
 
-### `maxColumns`
+#### `maxColumns`
 
 - Required: `true`
 - Type: `number`
