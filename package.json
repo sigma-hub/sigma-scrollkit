@@ -2,6 +2,7 @@
   "name": "sigma-scrollkit",
   "version": "1.0.7",
   "private": false,
+  "license": "MIT",
   "author": {
     "name": "Aleksey Hoffman",
     "email": "aleksey.hoffman.public@gmail.com"
