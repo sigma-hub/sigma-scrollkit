@@ -17,6 +17,7 @@ module.exports = {
     eqeqeq: ['error', 'always'],
     quotes: ['error', 'single'],
     indent: ['error', 2],
+    'eol-last': ['error', 'never'],
     'no-unused-vars': 'off',
     'no-console': 'warn',
     'no-debugger': 'warn',
