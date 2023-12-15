@@ -224,7 +224,7 @@ The module exports 2 components:
 #### `bottom-reached` 
 - Type: `boolean`
 
-## `VirtualScrollerRow` props:
+### `VirtualScrollerRow` props:
 
 #### `virtualEntry`
 
