@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {VirtualEntry} from './VirtualScroller.vue';
+import type {VirtualEntry} from 'types/shared';
 
 interface Props {
   virtualEntry: VirtualEntry;

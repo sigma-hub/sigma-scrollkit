@@ -22,7 +22,7 @@
   ],
   "files": [
     "dist",
-    "types/index.d.ts"
+    "types/**/*.ts"
   ],
   "type": "module",
   "types": "./types/index.d.ts",
@@ -39,10 +39,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --declaration --emitDeclarationOnly && vite build",
+    "build": "run-p type-check && vite build",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc",
+    "type-check": "vue-tsc --declaration --emitDeclarationOnly",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {

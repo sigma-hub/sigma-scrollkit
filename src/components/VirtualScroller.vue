@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import uniqueId from '../utils/uniqueId';
+import uniqueId from '@/utils/uniqueId';
 import {
   ref,
   computed,
@@ -9,21 +9,9 @@ import {
   onBeforeUnmount
 } from 'vue';
 import type {Ref} from 'vue';
+import type {VirtualEntryItem, VirtualEntry} from 'types/shared';
 
 type ElementResizeCallback = (entry: ResizeObserverEntry) => void;
-
-interface VirtualEntryItem {
-  [key: string]: unknown;
-}
-
-export interface VirtualEntry {
-  id: number | string;
-  height: number;
-  rowGap: number;
-  columnGap: number;
-  items: VirtualEntryItem[];
-  [key: string]: unknown;
-}
 
 interface ScrollEmitValue {
   event: UIEvent;

@@ -127,6 +127,7 @@ interface Props {
 ```html
 <script setup>
 import {VirtualScroller, VirtualScrollerRow} from 'sigma-scrollkit'
+import type {VirtualEntry} from 'sigma-scrollkit/types/shared';
 
 // ...
 </script>
