@@ -117,7 +117,7 @@ const isBottomTriggerReached = computed(
 
 const viewportOffsetY = computed(() =>
   itemHeights.value
-    .slice(0, scrolledItemsCount.value)
+    .slice(0, Math.max(0, scrolledItemsCount.value))
     .reduce((accumulator, current) => accumulator + (current || 0), 0)
 );
 
@@ -252,7 +252,7 @@ function update() {
     return;
   }
 
-  scrollOffsetY.value = rootElementRef.value.scrollTop;
+  scrollOffsetY.value = Math.max(0, rootElementRef.value.scrollTop);
 
   nextTick(() => {
     setRenderedItemHeights();
@@ -338,8 +338,8 @@ function handleScrollStop() {
 }
 
 function setScrollStatus(element: HTMLElement | null) {
-  scrollPreviousOffsetY.value = scrollOffsetY.value;
-  scrollOffsetY.value = element?.scrollTop || 0;
+  scrollPreviousOffsetY.value = Math.max(0, scrollOffsetY.value);
+  scrollOffsetY.value = Math.max(0, element?.scrollTop || 0);
   scrollDelta.value = scrollOffsetY.value - scrollPreviousOffsetY.value;
   scrollDirection.value = scrollDelta.value > 0 ? 'down' : 'up';
 
