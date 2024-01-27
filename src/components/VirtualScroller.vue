@@ -97,8 +97,10 @@ const renderedItems = computed(() =>
 
 const isTopReached = computed(() => scrollOffsetY.value === 0);
 
-const isBottomReached = computed(() =>
-    Math.ceil(scrollOffsetY.value + rootElementHeight.value) >= totalItemHeight.value
+const isBottomReached = computed(
+  () =>
+    Math.ceil(scrollOffsetY.value + rootElementHeight.value) >=
+    totalItemHeight.value
 );
 
 const isTopTriggerReached = computed(
@@ -167,15 +169,11 @@ watch(
 );
 
 watch(isTopReached, newValue => {
-  if (newValue) {
-    emit('top-reached', newValue);
-  }
+  emit('top-reached', newValue);
 });
 
 watch(isBottomReached, newValue => {
-  if (newValue) {
-    emit('bottom-reached', newValue);
-  }
+  emit('bottom-reached', newValue);
 });
 
 watch(isTopTriggerReached, newValue => {
