@@ -39,10 +39,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check && vite build",
+    "build": "run-p types:build && vite build",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --declaration --emitDeclarationOnly",
+    "types:build": "vue-tsc --declaration --emitDeclarationOnly -p tsconfig.node.json",
+    "types:check": "vue-tsc --noEmit -p tsconfig.app.json",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {

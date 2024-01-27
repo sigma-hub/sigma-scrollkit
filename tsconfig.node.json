@@ -8,8 +8,10 @@
     "playwright.config.*"
   ],
   "compilerOptions": {
-    "composite": true,
-    "emitDeclarationOnly": true,
+    "rootDir": "./",
+    "outDir": "./dist",
+    "declarationDir": "./types", 
+    "declaration": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "types": ["node"]
